@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
-    const searchInput = document.getElementById('search-input');
-    const resultsContainer = document.getElementById('search-results');
-    const resultsList = document.getElementById('search-result-child');
+    const searchInput = document.getElementById('global-search-input');
+    const resultsContainer = document.getElementById('global-search-results');
+    const resultsList = document.getElementById('global-search-result-list');
     
     // Configuration
     const config = {
