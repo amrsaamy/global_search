@@ -10,22 +10,7 @@
 </div>
 
 @push('scripts')
-    @vite([
-        'css/vendor/global_search/search.css',
-        'js/vendor/global_search/search.js',
-       
-    ])
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            new GlobalSearch({
-                inputId: '{{ $input_id }}',
-                resultsId: '{{ $results_id }}',
-                listId: '{{ $list_id }}',
-                collections: @json(config('globalsearch.collections')),
-                apiBase: '{{ config('globalsearch.api_endpoint') }}',
-                debounceTime: {{ config('globalsearch.debounce') }}
-            });
-        });
-    </script>
+<link rel="stylesheet" href="css/vendor/global_search/search.css">
+<script src="js/vendor/global_search/search.js"></script>
+   
 @endpush
