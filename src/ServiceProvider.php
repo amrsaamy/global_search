@@ -36,37 +36,20 @@ class ServiceProvider extends AddonServiceProvider
 
     protected function configureApi()
     {
-        // Enable API and configure collections
-        config([
-            'statamic.api.enabled' => true,
-            'statamic.api.resources.collections' => [
-                '*' => [
-                    'enabled' => true,
-                    'allowed_filters' => ['title'],
-                ],
-                'pages' => true
-            ],
-        ]);
-
-        // Merge with existing configuration to preserve other settings
-        config()->set('statamic.api', array_merge(
+        // Merge configurations recursively without overwriting existing settings
+        config()->set('statamic.api', array_replace_recursive(
             config('statamic.api', []),
             [
-                'resources' => array_merge(
-                    config('statamic.api.resources', []),
-                    [
-                        'collections' => array_merge(
-                            config('statamic.api.resources.collections', []),
-                            [
-                                '*' => [
-                                    'enabled' => true,
-                                    'allowed_filters' => ['title'],
-                                ],
-                                'pages' => true
-                            ]
-                        )
+                'enabled' => true,
+                'resources' => [
+                    'collections' => [
+                        '*' => [
+                            'enabled' => true,
+                            'allowed_filters' => ['title', 'published', 'locale'],
+                        ],
+                        'pages' => true
                     ]
-                )
+                ]
             ]
         ));
     }
