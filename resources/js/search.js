@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // DOM Elements
     const searchInput = document.getElementById('global-search-input');
     const resultsContainer = document.getElementById('global-search-results');
-    const resultsList = document.getElementById('global-search-result-list');
+    const resultsList = document.getElementById('global-search-results-list');
     
     // Configuration
     const config = {
