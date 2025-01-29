@@ -1,0 +1,39 @@
+{
+    "name": "theen/global_search",
+    "description": "Theen Global Search Addon for Statamic",
+    "type": "statamic-addon",
+    "autoload": {
+        "psr-4": {
+            "Theen\\GlobalSearch\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Theen\\GlobalSearch\\Tests\\": "tests"
+        }
+    },
+    "require": {
+        "statamic/cms": "^5.0"
+    },
+    "require-dev": {
+        "orchestra/testbench": "^9.0"
+    },
+    "config": {
+        "allow-plugins": {
+            "pixelfear/composer-dist-plugin": true
+        }
+    },
+    "extra": {
+        "statamic": {
+            "name": "Global_Search",
+            "description": "Global_Search addon"
+        },
+        "laravel": {
+            "providers": [
+                "Theen\\GlobalSearch\\ServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

@@ -1,0 +1,10 @@
+title: Search
+sections:
+  main:
+    display: Main
+    fields:
+      -
+        handle: search_collections
+        field:
+          type: search_collections
+          display: Search Collections
