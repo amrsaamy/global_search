@@ -23,8 +23,8 @@ class ServiceProvider extends AddonServiceProvider
         ], 'global-search-config');
 
         $this->publishes([
-            __DIR__.'/../resources/js' => public_path('vendor/global-search/js'),
-            __DIR__.'/../resources/css' => public_path('vendor/global-search/css'),
+            __DIR__.'/../resources/js' => resource_path('js/vendor/global_search'),
+            __DIR__.'/../resources/css' => resource_path('css/vendor/global_search'),
         ], 'global-search-assets');
 
         $this->publishes([

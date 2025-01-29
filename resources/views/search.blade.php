@@ -10,9 +10,13 @@
 </div>
 
 @push('scripts')
-    <link rel="stylesheet" href="{{ mix('css/search.css', 'vendor/global-search') }}">
-    <script src="{{ mix('js/search.js', 'vendor/global-search') }}"></script>
-
+    @vite([
+        'resources/css/search.css',
+        'resources/js/search.js',
+        'vendor/global_search/resources/css/search.css',
+        'vendor/global_search/resources/js/search.js'
+    ])
+    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             new GlobalSearch({
