@@ -94,6 +94,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchCollection(collection, query) {
         const url = new URL(`${config.apiBase}/${collection}/entries`);
+        console.log(url);
+        
         const params = {
             'filter[title:contains]': query,
             'filter[published:is]': true,
