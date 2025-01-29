@@ -1,49 +1,53 @@
-class GlobalSearch {
-    constructor(config) {
-        // DOM Elements
-        this.searchInput = document.getElementById(config.inputId);
-        this.resultsContainer = document.getElementById(config.resultsId);
-        this.resultsList = document.getElementById(config.listId);
-
-        // Configuration
-        this.config = {
-            debounceTime: config.debounceTime || 300,
-            collections: config.collections || ['experience', 'place', 'pages'],
-            apiBase: config.apiBase || '/api/collections',
-            locale: document.documentElement.lang || 'en',
-            messages: config.messages || {
-                noResults: { en: 'No matching results.', ar: 'لا توجد نتائج مطابقة.' },
-                error: { en: 'An error occurred during the search.', ar: 'حدث خطأ أثناء البحث.' }
+document.addEventListener('DOMContentLoaded', () => {
+    // DOM Elements
+    const searchInput = document.getElementById('search-input');
+    const resultsContainer = document.getElementById('search-results');
+    const resultsList = document.getElementById('search-result-child');
+    
+    // Configuration
+    const config = {
+        debounceTime: 300,
+        collections: ['experience', 'place', 'pages'],
+        apiBase: '/api/collections',
+        locale: document.documentElement.lang || 'en',
+        messages: {
+            noResults: { 
+                en: 'No matching results.', 
+                ar: 'لا توجد نتائج مطابقة.' 
+            },
+            error: { 
+                en: 'An error occurred during the search.', 
+                ar: 'حدث خطأ أثناء البحث.' 
             }
-        };
+        }
+    };
 
-        // State management
-        this.abortController = null;
-        this.currentRequest = null;
+    // State management
+    let abortController = null;
+    let currentRequest = null;
 
-        this.initialize();
+    // Initialize the search
+    initializeSearch();
+
+    function initializeSearch() {
+        if (!searchInput || !resultsContainer || !resultsList) {
+            console.error('One or more required elements are missing');
+            return;
+        }
+
+        setupEventListeners();
+        injectStyles();
     }
 
-    initialize() {
-        this.setupEventListeners();
-        this.injectStylesIfNeeded();
-    }
-
-    setupEventListeners() {
+    function setupEventListeners() {
         // Debounced input handler
-        this.searchInput.addEventListener('input', this.debounce((e) => {
-            this.handleSearch(e.target.value.trim());
-        }, this.config.debounceTime));
+        searchInput.addEventListener('input', debounce(handleInput, config.debounceTime));
 
         // Click outside handler
-        document.addEventListener('click', (e) => {
-            if (!this.searchInput.contains(e.target) && !this.resultsContainer.contains(e.target)) {
-                this.hideResults();
-            }
-        });
+        document.addEventListener('click', handleClickOutside);
     }
 
-    debounce(func, wait) {
+    function debounce(func, wait) {
         let timeout;
         return (...args) => {
             clearTimeout(timeout);
@@ -51,43 +55,35 @@ class GlobalSearch {
         };
     }
 
-    async handleSearch(query) {
+    async function handleInput(e) {
         try {
-            this.clearResults();
+            const query = e.target.value.trim();
+            clearResults();
 
             if (query.length < 1) {
-                this.hideResults();
+                hideResults();
                 return;
             }
 
-            this.showLoadingState();
-            const results = await this.performSearch(query);
-            this.displayResults(results);
+            showLoadingState();
+            const results = await performSearch(query);
+            displayResults(results);
 
-            if (results.length > 0) {
-                this.showResults();
-            } else {
-                this.showNoResults();
-            }
+            results.length > 0 ? showResults() : showNoResults();
         } catch (error) {
-            this.handleSearchError(error);
+            handleSearchError(error);
         }
     }
 
-    async performSearch(query) {
-        // Abort previous request if exists
-        if (this.abortController) {
-            this.abortController.abort();
-        }
-
-        // Create new abort controller
-        this.abortController = new AbortController();
+    async function performSearch(query) {
+        if (abortController) abortController.abort();
+        abortController = new AbortController();
 
         try {
-            const requests = this.config.collections.map(collection =>
-                this.fetchCollection(collection, query)
+            const requests = config.collections.map(collection => 
+                fetchCollection(collection, query)
             );
-
+            
             const results = await Promise.all(requests);
             return results.flat();
         } catch (error) {
@@ -96,31 +92,28 @@ class GlobalSearch {
         }
     }
 
-    async fetchCollection(collection, query) {
-        const url = new URL(`${this.config.apiBase}/${collection}/entries`);
+    async function fetchCollection(collection, query) {
+        const url = new URL(`${config.apiBase}/${collection}/entries`);
         const params = {
             'filter[title:contains]': query,
             'filter[published:is]': true,
-            'filter[locale:is]': this.config.locale
+            'filter[locale:is]': config.locale
         };
 
-        Object.entries(params).forEach(([key, value]) =>
+        Object.entries(params).forEach(([key, value]) => 
             url.searchParams.append(key, value)
         );
 
         const response = await fetch(url, {
-            signal: this.abortController.signal
+            signal: abortController.signal
         });
 
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-
-        const data = await response.json();
-        return data.data || [];
+        return (await response.json()).data || [];
     }
 
-    displayResults(results) {
-        this.resultsList.innerHTML = '';
-
+    function displayResults(results) {
+        resultsList.innerHTML = '';
         const fragment = document.createDocumentFragment();
 
         results.forEach(item => {
@@ -134,55 +127,61 @@ class GlobalSearch {
             fragment.appendChild(li);
         });
 
-        this.resultsList.appendChild(fragment);
+        resultsList.appendChild(fragment);
     }
 
-    showLoadingState() {
-        this.resultsList.innerHTML = `
+    function handleClickOutside(e) {
+        if (!searchInput.contains(e.target) && !resultsContainer.contains(e.target)) {
+            hideResults();
+        }
+    }
+
+    function showLoadingState() {
+        resultsList.innerHTML = `
             <div class="loading-state">
                 <svg class="spinner" viewBox="0 0 50 50">
                     <circle cx="25" cy="25" r="20" fill="none" stroke-width="5"></circle>
                 </svg>
-                <span>${this.config.locale === 'ar' ? 'جاري البحث...' : 'Searching...'}</span>
+                <span>${config.locale === 'ar' ? 'جاري البحث...' : 'Searching...'}</span>
             </div>
         `;
     }
 
-    showNoResults() {
-        this.resultsList.innerHTML = `
+    function showNoResults() {
+        resultsList.innerHTML = `
             <p class="no-results">
-                ${this.config.messages.noResults[this.config.locale]}
+                ${config.messages.noResults[config.locale]}
             </p>
         `;
     }
 
-    handleSearchError(error) {
+    function handleSearchError(error) {
         console.error('Search error:', error);
-        this.resultsList.innerHTML = `
+        resultsList.innerHTML = `
             <p class="error-message">
-                ${this.config.messages.error[this.config.locale]}
+                ${config.messages.error[config.locale]}
             </p>
         `;
     }
 
-    clearResults() {
-        this.resultsList.innerHTML = '';
+    function clearResults() {
+        resultsList.innerHTML = '';
     }
 
-    showResults() {
-        this.resultsContainer.classList.add('show');
-        this.resultsContainer.style.opacity = '1';
+    function showResults() {
+        resultsContainer.classList.add('show');
+        resultsContainer.style.opacity = '1';
     }
 
-    hideResults() {
-        this.resultsContainer.classList.remove('show');
-        this.resultsContainer.style.opacity = '0';
+    function hideResults() {
+        resultsContainer.classList.remove('show');
+        resultsContainer.style.opacity = '0';
     }
 
-    injectStylesIfNeeded() {
-        if (!document.getElementById('globalsearch-styles')) {
+    function injectStyles() {
+        if (!document.getElementById('search-styles')) {
             const style = document.createElement('style');
-            style.id = 'globalsearch-styles';
+            style.id = 'search-styles';
             style.textContent = `
                 .loading-state {
                     display: flex;
@@ -190,14 +189,12 @@ class GlobalSearch {
                     padding: 1rem;
                     color: #666;
                 }
-
                 .spinner {
                     animation: rotate 1s linear infinite;
                     height: 20px;
                     width: 20px;
-                    margin-${this.config.locale === 'ar' ? 'left' : 'right'}: 8px;
+                    margin-${config.locale === 'ar' ? 'left' : 'right'}: 8px;
                 }
-
                 .spinner circle {
                     stroke: currentColor;
                     stroke-linecap: round;
@@ -205,11 +202,9 @@ class GlobalSearch {
                     stroke-dashoffset: 0;
                     animation: dash 1.5s ease-in-out infinite;
                 }
-
                 @keyframes rotate {
                     100% { transform: rotate(360deg); }
                 }
-
                 @keyframes dash {
                     0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
                     50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
@@ -219,26 +214,4 @@ class GlobalSearch {
             document.head.appendChild(style);
         }
     }
-}
-
-// Initialize with configuration
-document.addEventListener('DOMContentLoaded', () => {
-    const search = new GlobalSearch({
-        inputId: 'search-input',
-        resultsId: 'search-results',
-        listId: 'search-result-child',
-        debounceTime: 300,
-        collections: ['experience', 'place', 'pages'],
-        apiBase: '/api/collections',
-        messages: {
-            noResults: {
-                en: 'No matching results.',
-                ar: 'لا توجد نتائج مطابقة.'
-            },
-            error: {
-                en: 'An error occurred during the search.',
-                ar: 'حدث خطأ أثناء البحث.'
-            }
-        }
-    });
 });
