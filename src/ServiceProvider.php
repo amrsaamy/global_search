@@ -18,9 +18,11 @@ class ServiceProvider extends AddonServiceProvider
 
     public function bootAddon()
     {
-        // $this->configureApi();
+        $this->mergeConfigFrom(__DIR__.'/../config/globalsearch.php', 'globalsearch');
+        
+        $this->configureApi();
         $this->publishes([
-            __DIR__.'/../config/api.php' => config_path('statamic/api.php'),
+            __DIR__.'/../config/globalsearch.php' => config_path('globalsearch.php'),
         ], 'global-search-config');
         $this->publishes([
             // __DIR__.'/../resources/js' => resource_path('js/vendor/global_search'),
@@ -38,21 +40,29 @@ class ServiceProvider extends AddonServiceProvider
 
     protected function configureApi()
     {
-        // Merge configurations recursively without overwriting existing settings
-        config()->set('statamic.api', array_replace_recursive(
-            config('statamic.api', []),
-            [
-                'enabled' => true,
-                'resources' => [
-                    'collections' => [
-                        '*' => [
-                            'enabled' => true,
-                            'allowed_filters' => ['title', 'published', 'locale'],
-                        ],
-                        'pages' => true
-                    ]
+        // Only modify if global search API is enabled
+        if (config('globalsearch.api.enabled', true)) {
+            config([
+                'statamic.api.enabled' => true,
+                'statamic.api.resources.collections' => $this->mergeCollectionConfig()
+            ]);
+        }
+    }
+
+    protected function mergeCollectionConfig()
+    {
+        $existing = config('statamic.api.resources.collections', []);
+        $modified = collect(config('globalsearch.collections', []))
+            ->mapWithKeys(fn($col) => [
+                $col => [
+                    'allowed_filters' => array_merge(
+                        $existing[$col]['allowed_filters'] ?? [],
+                        ['title']
+                    ),
+                    'enabled' => true
                 ]
-            ]
-        ));
+            ])->toArray();
+
+        return array_merge_recursive($existing, $modified);
     }
 }
