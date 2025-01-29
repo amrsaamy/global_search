@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Configuration
     const config = {
         debounceTime: 300,
-        collections: ['experience', 'place', 'pages'],
+        collections: [/*'experience', 'place',*/ 'pages'],
         apiBase: '/api/collections',
         locale: document.documentElement.lang || 'en',
         messages: {
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchCollection(collection, query) {
-        const url = new URL(`${config.apiBase}/${collection}/entries`);
+        const url = new URL(`${config.apiBase}/${collection}/entries`,window.location.origin);
         console.log(url);
         
         const params = {

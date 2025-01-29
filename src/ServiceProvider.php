@@ -18,9 +18,7 @@ class ServiceProvider extends AddonServiceProvider
 
     public function bootAddon()
     {
-        $this->publishes([
-            __DIR__.'/../config/globalsearch.php' => config_path('globalsearch.php'),
-        ], 'global-search-config');
+        $this->configureApi();
 
         $this->publishes([
             __DIR__.'/../resources/js' => resource_path('js/vendor/global_search'),
@@ -34,5 +32,42 @@ class ServiceProvider extends AddonServiceProvider
         ], 'global-search-views');
 
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'global-search');
+    }
+
+    protected function configureApi()
+    {
+        // Enable API and configure collections
+        config([
+            'statamic.api.enabled' => true,
+            'statamic.api.resources.collections' => [
+                '*' => [
+                    'enabled' => true,
+                    'allowed_filters' => ['title'],
+                ],
+                'pages' => true
+            ],
+        ]);
+
+        // Merge with existing configuration to preserve other settings
+        config()->set('statamic.api', array_merge(
+            config('statamic.api', []),
+            [
+                'resources' => array_merge(
+                    config('statamic.api.resources', []),
+                    [
+                        'collections' => array_merge(
+                            config('statamic.api.resources.collections', []),
+                            [
+                                '*' => [
+                                    'enabled' => true,
+                                    'allowed_filters' => ['title'],
+                                ],
+                                'pages' => true
+                            ]
+                        )
+                    ]
+                )
+            ]
+        ));
     }
 }
