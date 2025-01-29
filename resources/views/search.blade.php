@@ -11,8 +11,9 @@
 
 @push('scripts')
     @vite([
-        'vendor/global_search/resources/css/search.css',
-        'vendor/global_search/resources/js/search.js'
+        'resources/css/vendor/global_search/search.css',
+        'resources/js/vendor/global_search/search.js',
+       
     ])
     
     <script>
