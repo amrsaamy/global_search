@@ -1,10 +1,10 @@
 <?php
 
 return [
-    'collections' => ['experience', 'place', 'pages'], // Collections to search
+    'collections' => ['pages'], // Collections to search
     'api' => [
         'enabled' => env('GLOBAL_SEARCH_API_ENABLED', true),
-        'allowed_filters' => ['title', 'published', 'locale'],
+        'allowed_filters' => ['title'],
         'route' => env('GLOBAL_SEARCH_API_ROUTE', '/api/collections')
     ],
     'search' => [
