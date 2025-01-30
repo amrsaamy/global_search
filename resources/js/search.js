@@ -98,8 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const params = {
             'filter[title:contains]': query,
-            'filter[published:is]': true,
-            'filter[locale:is]': config.locale
+            
         };
 
         Object.entries(params).forEach(([key, value]) => 
