@@ -62,7 +62,10 @@ class ServiceProvider extends AddonServiceProvider
                     'enabled' => true
                 ]
             ])->toArray();
-
-        return array_merge_recursive($existing, $modified);
+            if(is_bool($existing)){
+                return $modified;
+            }else if(is_array($existing)){
+                return array_merge_recursive($existing, $modified);
+            }
     }
 }
